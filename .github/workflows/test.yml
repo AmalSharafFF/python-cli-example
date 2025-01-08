@@ -37,13 +37,13 @@ jobs:
         find . | grep -E "(__pycache__|docs_.*$$|\.pyc|\.pyo$$)" | xargs rm -rf
 
     - name: Format code with Ruff
-      run: poetry run ruff format src/ff tests
+      run: poetry run ruff format src/ff/exampleproject tests
 
     - name: Lint code with Ruff
-      run: poetry run ruff check src/ff tests
+      run: poetry run ruff check src/ff/exampleproject tests
 
     - name: Type check with Mypy
-      run: poetry run mypy src/ff tests --pretty --install-types --non-interactive
+      run: poetry run mypy src/ff/exampleproject tests --pretty --install-types --non-interactive
 
     - name: Run Tests with Pytest
       run: |

@@ -51,7 +51,7 @@ jobs:
 
     - name: Upload Test Report
       if: always()  # Ensure this step runs regardless of previous failures
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: python-test-report
         path: python_test_report.xml

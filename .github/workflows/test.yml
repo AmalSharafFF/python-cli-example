@@ -1,0 +1,63 @@
+name: Run Tests and Linting
+
+on:
+  push:
+    branches:
+      - main   # Trigger action on push to main
+  pull_request:
+    branches:
+      - main   # Trigger action on pull request to main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner for the job
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2  # Checkout the repository
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'  # Specify Python version (adjust as needed)
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        export PATH="$HOME/.local/bin:$PATH"
+    
+    - name: Install dependencies
+      run: |
+        poetry install  # Install project dependencies (including ruff, mypy, etc.)
+
+    - name: Clean up previous artifacts
+      run: |
+        rm -rf .coverage .hypothesis .mypy_cache .pytest_cache *.egg-info
+        rm -rf dist
+        find . | grep -E "(__pycache__|docs_.*$$|\.pyc|\.pyo$$)" | xargs rm -rf
+
+    - name: Format code with Ruff
+      run: poetry run ruff format src/ff tests
+
+    - name: Lint code with Ruff
+      run: poetry run ruff check src/ff tests
+
+    - name: Type check with Mypy
+      run: poetry run mypy src/ff tests --pretty --install-types --non-interactive
+
+    - name: Run Tests with Pytest
+      run: |
+        poetry run pytest --cov=ff.exampleproject --junitxml=python_test_report.xml --basetemp=./tests/.tmp
+
+    - name: Upload Test Report
+      if: always()  # Ensure this step runs regardless of previous failures
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-test-report
+        path: python_test_report.xml
+
+    - name: Upload Coverage Report
+      if: always()
+      run: |
+        curl -s https://codecov.io/bash > codecov.sh
+        bash codecov.sh -t YOUR_CODECOV_TOKEN  # Ensure you have a Codecov token
